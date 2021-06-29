@@ -34,9 +34,7 @@ class Brig {
     #closed = true;
     #queue = null;
     #workerpool = null;
-
-    //public vars
-    timeout = process.env.WORKER_TIMEOUT === 'Infinity' ? Infinity : 1000 * 60;
+    #timeout = process.env.WORKER_TIMEOUT === 'Infinity' ? Infinity : 1000 * 60;
 
     // private methods
     #exec(code, data) {
@@ -44,7 +42,7 @@ class Brig {
             debug('#exec(...)');
 
             this.#workerpool.exec('execute', [code, data])
-                // .timeout(timeout)
+                .timeout(this.#timeout)
                 .then((resp) => {
                     debug('#exec(...) resp');
                     return respond(resp);

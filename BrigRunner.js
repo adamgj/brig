@@ -5,7 +5,7 @@ class BrigRunner {
     #options = null;
     #runner = null;
 
-    constructor(options, cb) {
+    constructor(options) {
         debug('BrigRunner(...)');
         this.#options = options;
 
@@ -13,26 +13,19 @@ class BrigRunner {
         // runner = new VM(options);
     }
 
-    compile(code, cb) {
+    compile(code) {
         debug('BrigRunner compile(...)');
 
-        const err = new Error('Must extend BrigRunner override compile(code, cb)!');
-        if (cb) {
-            debug(err);
-            cb(err);
-            return this;
-        }
-        else {
-            throw err;
-        }
+        throw new Error('Must extend BrigRunner override compile(code)!');
     }
 
-    wrap(code, cb) {
+    wrap(code) {
         debug('BrigRunner wrap(...)');
 
         // Example code wrapper
 
         const wrapped = `
+        require, eval = () => { throw new Error('Function not permitted!') };
         {
             (() => {
                 return (${code});
@@ -40,28 +33,13 @@ class BrigRunner {
         }
         `;
 
-        if (cb) {
-            debug('BrigRunner wrapped');
-            cb(null, wrapped);
-            return this;
-        }
-        else {
-            throw err;
-        }
+        return wrapped;
     }
 
-    run(code, context, cb) {
+    run(code, context) {
         debug('BrigRunner run(...)');
 
-        const err = new Error('Must extend BrigRunner override run(code, cb)!');
-        if (cb) {
-            debug(err);
-            cb(err);
-            return this;
-        }
-        else {
-            throw err;
-        }
+        throw new Error('Must extend BrigRunner override run(code)!');
     }
 
 }

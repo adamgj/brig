@@ -1,25 +1,26 @@
 const debug = require('debug')('brig:runner');
 const BrigRunner = require('./BrigRunner.js');
-const {VM} = require('vm2');
+const {VM, VMScript} = require('vm2');
 
 class BrigRunnerVM2 extends BrigRunner {
 
     #options = {
         timeout: process.env.BRIG_TIMEOUT === 'Infinity' ? undefined : 1000 * 60,
+        fixAsync: true,
+        eval: false,
+        wasm: false,
     };
     #runner = null;
 
-    constructor(options, cb) {
+    constructor(options) {
         debug('BrigRunnerVM2(...)');
-        super(options, cb);
+        super(options);
         if (options) this.#options = options;
 
         // init runner
         this.#runner = this.#initRunner(options);
 
-        if (cb) {
-            cb(null, this);
-        }
+        debug('BrigRunnerVM2 constructed');
     }
 
     #initRunner(opt) {
@@ -27,55 +28,40 @@ class BrigRunnerVM2 extends BrigRunner {
         return runner;
     }
 
-    compile(code, cb) {
+    compile(code) {
         debug('BrigRunnerVM2 compile(...)');
 
-        const err = new Error('NYI!');
-        if (cb) {
-            debug(err);
-            cb(err);
-            return this;
-        }
-        else {
-            throw err;
-        }
+        const script = new VMScript(code);
+
+        debug('BrigRunnerVM2 compiled');
+        return script;
     }
 
-    wrap(code, cb) {
+    wrap(code) {
         debug('BrigRunnerVM2 wrap(...)');
 
         // Example code wrapper
 
         const wrapped = `
-        const sandbox = sandbox || {};
-        ((sandbox) => {
-            return ({${code}});
-        }).call(sandbox, sandbox);
+        ((context) => {
+            return ${code};
+        })(brig || { context: {}, date: new Date(), brig: true });
         `;
 
-        if (cb) {
-            debug('BrigRunnerVM2 wrapped');
-            cb(null, wrapped);
-            return this;
-        }
-        else {
-            throw err;
-        }
+        debug('BrigRunnerVM2 wrapped');
+        return wrapped;
     }
 
-    run(code, context, cb) {
+    run(code, context) {
         debug('BrigRunnerVM2 run(...)');
 
-        // TODO: create vm sandbox data from context
+        code = this.wrap(code);
+        if (context) this.#runner.freeze({ context, date: new Date(), brig: true }, 'brig');
+        code = this.compile(code);
         const ret = this.#runner.run(code);
+
         debug('BrigRunnerVM2 ran');
-        if (cb) {
-            cb(null, ret);
-            return this;
-        }
-        else {
-            return ret;
-        }
+        return ret;
     }
 
 }
