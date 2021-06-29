@@ -1,3 +1,5 @@
-const Brig = require('./brig.js');
+const Brig = require('./Brig.js');
+const BrigRunner = require('./BrigRunner.js');
+const BrigRunnerVM2 = require('./BrigRunnerVM2.js');
 
-module.exports = {Brig};
+module.exports = {Brig, BrigRunner, BrigRunnerVM2};

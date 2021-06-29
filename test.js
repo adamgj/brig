@@ -6,7 +6,7 @@ const brig = new Brig();
 
 brig
     .open()
-    .send('Math.random();', {msg: 'hello world'}, response);
+    .send('const rnd = Math.random(); rnd + 1', {msg: 'hello world'}, response);
 
 function response(err, resp) {
     console.log(resp);

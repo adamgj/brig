@@ -43,7 +43,7 @@ class Brig {
         return new Promise((respond, reject) => {
             debug('#exec(...)');
 
-            this.#workerpool.exec('exec', [code, data])
+            this.#workerpool.exec('execute', [code, data])
                 // .timeout(timeout)
                 .then((resp) => {
                     debug('#exec(...) resp');

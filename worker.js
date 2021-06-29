@@ -1,5 +1,5 @@
 // list of valid module names
-const MODULES = ['workerpool', 'vm2', 'debug', 'safe-buffer', 'stream', 'math'];
+const MODULES = ['workerpool', 'debug', 'safe-buffer', 'stream'];
 
 function require_worker(module) {
     if (!(MODULES.includes(module))) {
@@ -10,34 +10,36 @@ function require_worker(module) {
 
 // make our requires for the worker
 const workerpool = require_worker('workerpool');
-const {VM} = require_worker('vm2');
 const {Buffer} = require_worker('safe-buffer');
 const debug = require_worker('debug')('brig:worker');
+// TODO: dynamic require based one main thread message ???
+const {BrigRunnerVM2} = require('.');
 
 const VM_OPTIONS = {
     timeout: process.env.WORKER_TIMEOUT === 'Infinity' ? undefined : 1000 * 60,
     require: {
-        builtin: ['math', 'stream', 'http2'],
+        builtin: ['stream', 'http2'],
     }
 };
+
+let runner = new BrigRunnerVM2(VM_OPTIONS);
 
 // monkey patch require to noop func
 require, require_worker = () => {};
 
-function workerExec(code, data) {
-    debug('workerExec');
+function workerExecute(code, context) {
+    debug('workerExecute(...)');
 
-    const opts = VM_OPTIONS;
-    opts.sandbox = {
-        data,
-    };
-    const vm = new VM(opts);
+    return runner.run(code, context);
+}
 
-    debug('workerExec vm run done');
+function workerCompile(code) {
+    debug('workerCompile(...)');
 
-    return vm.run(code);
+    return runner.compile(code);
 }
 
 workerpool.worker({
-    exec: workerExec,
+    execute: workerExecute,
+    compile: workerCompile,
 });
